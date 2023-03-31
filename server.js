@@ -53,10 +53,9 @@ app.post('/login', async (req, res) => {
     }
 })
 
-app.post('/getAllUsers', async (req, res) => {
+app.get('/getAllUsers/:token', async (req, res) => {
     try{
-        const {token} = req.body;
-        const result = jwt.verify(token, 'secret123')
+        const result = jwt.verify(req.params.token, 'secret123')
         
         if (result.name && result.iat){
             const data = await UserModel.find();
@@ -64,6 +63,25 @@ app.post('/getAllUsers', async (req, res) => {
         }
     } catch (error){
         res.json({ status: 'error', error })
+    }
+})
+
+app.post("/addUser", async (req, res) => {
+    try{
+        const {token, ownerName, toUserName} = req.body;
+        const result = jwt.verify(token, 'secret123')
+        if (result.name && result.iat){
+            const owner = await UserModel.findOne({name: ownerName})
+            const toUser = await UserModel.findOne({name: toUserName})
+            
+            // TODO: 
+            // owner.addedFriends.push();
+            // toUser.addedFriends.push();
+            
+            res.json({status: 'ok', owner, toUser})
+        }
+    } catch (error){
+        res.json({status: "error", error})
     }
 })
 
