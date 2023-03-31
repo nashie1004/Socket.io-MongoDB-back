@@ -18,6 +18,6 @@ const UserSchema = mongoose.Schema({
     messages: [Object]
 })
 
-const UserModel = mongoose.model('testUsers', UserSchema)
+const UserModel = mongoose.model('socketIOUsers', UserSchema)
 
 module.exports = UserModel;
