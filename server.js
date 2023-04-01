@@ -1,22 +1,55 @@
 const express = require('express')
-const app = express();
 const cors = require('cors');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
+const { Server } = require('socket.io')
 
+const UserModel = require('./models/UserModels.js')
+
+const app = express();
 app.use(cors())
 app.use(express.json())
 app.use(bodyParser.json());
 
-const UserModel = require('./models/UserModels.js')
+//FOR SOCKET.IO
+const http = require('http');
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: 'http://localhost:5173',
+        methods: ['GET', 'POST'],
+    }
+});
 
-try{
-    mongoose.connect('mongodb+srv://nash:nash@cluster0.av72roz.mongodb.net/chatApplicationOfficial')
-} catch (err) {
-    console.log(err);
-}
+//CONNECT TO DB
+try{mongoose.connect('mongodb+srv://nash:nash@cluster0.av72roz.mongodb.net/chatApplicationOfficial')} 
+catch (err) {console.log(err);}
 
+//SOCKET.IO
+io.on('connection', (socket) => {
+    console.log(`A User Connected: ${socket.id}`)
+
+    socket.on('joinRoom', (room) => {
+        socket.join(room)
+        console.log(`User: ${socket.id} joined room: ${room}`)
+    })
+
+    socket.on('sendMessageToServer', (data) => {
+        io.to(data.room).emit('sendMessageToClient', {
+            message: data.message,
+            room: data.room,
+            name: data.name,
+        })
+        console.log(`message: ${data.message} on room: ${data.room}`)
+    })
+
+    socket.on('disconnect', () => {
+        console.log(`A User Disconnected`)
+    })
+})
+
+//ROUTES
 app.post('/register', async (req, res) => {
     try{
         const {name, password, profile} = req.body;
@@ -75,9 +108,10 @@ app.post("/addUser", async (req, res) => {
             const toUser = await UserModel.findOne({name: toUserName})
             
             // TODO: 
-            // owner.addedFriends.push();
-            // toUser.addedFriends.push();
-            
+            // owner.addedFriends.push(toUser.name);
+            // toUser.addedFriends.push(owner.name);
+            // UserModel.save()
+
             res.json({status: 'ok', owner, toUser})
         }
     } catch (error){
@@ -85,4 +119,4 @@ app.post("/addUser", async (req, res) => {
     }
 })
 
-app.listen('3001', () => console.log('>> 3001'))
+server.listen('3001', () => console.log('>> 3001'))
