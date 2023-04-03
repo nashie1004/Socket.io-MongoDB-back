@@ -36,35 +36,15 @@ io.on('connection', (socket) => {
     })
 
     socket.on('sendMessageToServer', (data) => {
-        const name = data.name;
-
-        async function call(){
-            let res = await UserModel.findOne({name})
-
-            let to = ''
-            const room = data.room.split('-');
-            if (data.name !== room[0]){
-                to = room[0] 
-            } else {
-                to = room[1] 
-            }
-
-            console.log(to, res, data)
-            // res.messages[to].push(data.message)
-
-            // await res.save();
-
-            // res = await UserModel.findOne({name})
-            
-            io.to(data.room).emit('sendMessageToClient', {
-                message: data.message, 
-                //array: res.messages
-                room: data.room,
-                name: data.name,
-                test: res
-            })
-        }
-        call()
+        const room = data.room.split('-');
+        let to = data.name !== room[0] ? room[0] : room[1] 
+        
+        io.to(data.room).emit('sendMessageToClient', {
+            message: data.message, 
+            room: data.room,
+            name: data.name, 
+            time: data.time, to,
+        })
     })
 
     socket.on('disconnect', () => {
@@ -91,7 +71,7 @@ app.post('/register', async (req, res) => {
     } catch (error){
         res.json({ status: 'error', error })
     }
-}) //aasdasd asdasd
+}) 
 
 app.post('/login', async (req, res) => {
     try{
@@ -213,6 +193,34 @@ app.post("/deleteUser", async (req, res) => {
         res.json({status: "error", error})
     }
 })
+app.get('/getInitialConversation', async (req, res) => {
+    //TODO:
+})
+app.get('/saveConversation', async (req, res) => {
+    try{
+    //TODO:
+        // let ownerModel = await UserModel.findOne({name})
+        // let toUserModel = await UserModel.findOne({name: to})
 
+        // const prevValuesOwner = ownerModel.messages.get(to) 
+        // const prevValuesToUser = toUserModel.messages.get(name) 
+
+        // ownerModel.messages.set(to, [...prevValuesOwner, {
+        //     msg: data.message, time: data.time
+        // }]) 
+        // toUserModel.messages.set(name, [...prevValuesToUser, {
+        //     msg: data.message, time: data.time
+        // }]) 
+
+        // await ownerModel.save();
+        // await toUserModel.save();
+
+        // ownerModel = await UserModel.findOne({name})
+        // toUserModel = await UserModel.findOne({name: to})
+        
+    } catch (error){
+        res.json({status: "error", error})
+    }
+})
 
 server.listen('3001', () => console.log('>> 3001'))
