@@ -45,11 +45,6 @@ io.on('connection', (socket) => {
             name: data.name, 
             time: data.time, to,
         })
-
-        call()
-        async function call(){
-            console.log(data)
-        }
     })
 
     socket.on('disconnect', () => {
@@ -200,7 +195,7 @@ app.post("/deleteUser", async (req, res) => {
 })
 app.post('/getInitialConversation', async (req, res) => {
     try{
-        const {token, ownerName, toUserName} = req.body;
+        const {token, ownerName} = req.body;
         const result = jwt.verify(token, 'secret123')
 
         if (result.name && result.iat){
@@ -221,26 +216,19 @@ app.post('/saveConversation', async (req, res) => {
             let ownerModel = await UserModel.findOne({name: ownerName})
             let toUserModel = await UserModel.findOne({name: toUserName})
             
-            const prevValuesOwner = ownerModel.messages.get(toUserModel) 
-            const prevValuesToUser = toUserModel.messages.get(ownerName)
+            //CONVERSATION SAVE
+            ownerModel.messages.set(toUserName, [
+                ...messagesArray 
+            ]) 
+            toUserModel.messages.set(ownerName, [
+                ...messagesArray
+            ]) 
 
-            //TODO SEPERATE OWNER AND USER
-            //CONVERSATION ARRAY
-            console.log('body:', req.body.messagesArray)
-            // ownerModel.messages.set(toUserName, [
-            //     ...prevValuesOwner, 
-            //     ...messagesArray // message: '', time: ''
-            // ]) 
-            // toUserModel.messages.set(ownerName, [
-            //     ...prevValuesToUser, 
-            //     ...messagesArray
-            // ]) 
-
-            // await owner.save()
-            // await toUser.save()
+            await ownerModel.save()
+            await toUserModel.save()
             
-            // ownerModel = await UserModel.findOne({name: ownerName})
-            // toUserModel = await UserModel.findOne({name: toUserName})
+            ownerModel = await UserModel.findOne({name: ownerName})
+            toUserModel = await UserModel.findOne({name: toUserName})
 
             res.json({status: 'ok', ownerModel, toUserModel})
         }
