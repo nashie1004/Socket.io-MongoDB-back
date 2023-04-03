@@ -12,12 +12,14 @@ const UserSchema = mongoose.Schema({
     },
     profile: {
         type: String,
-        required: true
     },
     addedFriends: [String],
-    messages: [Object]
+    messages: {
+        type: Map,
+    },
+    
 })
 
-const UserModel = mongoose.model('socketIOUsers', UserSchema)
+const UserModel = mongoose.model('users', UserSchema)
 
 module.exports = UserModel;

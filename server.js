@@ -36,11 +36,35 @@ io.on('connection', (socket) => {
     })
 
     socket.on('sendMessageToServer', (data) => {
-        io.to(data.room).emit('sendMessageToClient', {
-            message: data.message,
-            room: data.room,
-            name: data.name,
-        })
+        const name = data.name;
+
+        async function call(){
+            let res = await UserModel.findOne({name})
+
+            let to = ''
+            const room = data.room.split('-');
+            if (data.name !== room[0]){
+                to = room[0] 
+            } else {
+                to = room[1] 
+            }
+
+            console.log(to, res, data)
+            // res.messages[to].push(data.message)
+
+            // await res.save();
+
+            // res = await UserModel.findOne({name})
+            
+            io.to(data.room).emit('sendMessageToClient', {
+                message: data.message, 
+                //array: res.messages
+                room: data.room,
+                name: data.name,
+                test: res
+            })
+        }
+        call()
     })
 
     socket.on('disconnect', () => {
@@ -58,7 +82,8 @@ app.post('/register', async (req, res) => {
         } 
         else {
             const newUser = new UserModel({
-                name, password, profile
+                name, password, profile, 
+                addedFriends: [], messages: {}
             })
             await newUser.save()
             res.json({ status: "ok", newUser })
@@ -66,7 +91,7 @@ app.post('/register', async (req, res) => {
     } catch (error){
         res.json({ status: 'error', error })
     }
-})
+}) //aasdasd asdasd
 
 app.post('/login', async (req, res) => {
     try{
@@ -131,6 +156,13 @@ app.post("/addUser", async (req, res) => {
             let owner = await UserModel.findOne({name: ownerName})
             let toUser = await UserModel.findOne({name: toUserName})
             
+            //CREATE MESSAGES ARRAY
+            //https://mongoosejs.com/docs/api/map.html
+
+            owner.messages.set(toUserName, []) 
+            toUser.messages.set(ownerName, []) 
+            
+            //ADD USER
             owner.addedFriends.push(toUser.name);
             toUser.addedFriends.push(owner.name);
             
@@ -139,6 +171,7 @@ app.post("/addUser", async (req, res) => {
 
             owner = await UserModel.findOne({name: ownerName})
             toUser = await UserModel.findOne({name: toUserName})
+            console.log(owner, toUser) 
 
             res.json({status: 'ok', owner, toUser})
         }
@@ -156,17 +189,23 @@ app.post("/deleteUser", async (req, res) => {
             let owner = await UserModel.findOne({name: ownerName})
             let toUser = await UserModel.findOne({name: toUserName})
             
+            //DELETE MESSAGES ARRAY
+            owner.messages.delete(toUserName)
+            toUser.messages.delete(ownerName)
+            
+            //DELETE USER 
             owner.addedFriends.splice(
                 owner.addedFriends.indexOf(toUser.name, 1))
 
             toUser.addedFriends.splice(
                 toUser.addedFriends.indexOf(owner.name), 1)
-            
+                
             await owner.save()
             await toUser.save()
 
             owner = await UserModel.findOne({name: ownerName})
             toUser = await UserModel.findOne({name: toUserName})
+            console.log(owner, toUser) 
 
             res.json({status: 'ok', owner, toUser})
         }
