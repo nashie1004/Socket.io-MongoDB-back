@@ -97,9 +97,7 @@ app.get('/getAllUsers/:token', async (req, res) => {
         if (result.name && result.iat){
             const data = await UserModel.find();
             res.json({status: 'ok', data})
-        } else {
-            res.json({status: 'error'})
-        }
+        } 
     } catch (error){
         res.json({ status: 'error', error })
     }
@@ -119,9 +117,7 @@ app.get('/getUserAddedUsers/:name/:token', async (req, res) => {
             } else {
                 res.json({ status: "error", data })
             }
-        } else {
-            res.json({ status: "error" })
-        }
+        } 
     } catch (error){ //
         res.json({status: "error", error})
     }
@@ -143,15 +139,18 @@ app.post("/addUser", async (req, res) => {
             toUser.messages.set(ownerName, []) 
             
             //ADD USER
-            owner.addedFriends.push(toUser.name);
-            toUser.addedFriends.push(owner.name);
+            if (!owner.addedFriends.includes(toUserName) && 
+                !toUser.addedFriends.includes(ownerName))
+            {
+                owner.addedFriends.push(toUserName);
+                toUser.addedFriends.push(ownerName);
+            }
             
             await owner.save()
             await toUser.save()
 
             owner = await UserModel.findOne({name: ownerName})
             toUser = await UserModel.findOne({name: toUserName})
-            console.log(owner, toUser) 
 
             res.json({status: 'ok', owner, toUser})
         }
@@ -185,7 +184,6 @@ app.post("/deleteUser", async (req, res) => {
 
             owner = await UserModel.findOne({name: ownerName})
             toUser = await UserModel.findOne({name: toUserName})
-            console.log(owner, toUser) 
 
             res.json({status: 'ok', owner, toUser})
         }
@@ -193,6 +191,7 @@ app.post("/deleteUser", async (req, res) => {
         res.json({status: "error", error})
     }
 })
+
 app.post('/getInitialConversation', async (req, res) => {
     try{
         const {token, ownerName} = req.body;
@@ -207,6 +206,7 @@ app.post('/getInitialConversation', async (req, res) => {
         res.json({status: "error", error})
     }
 })
+
 app.post('/saveConversation', async (req, res) => {
     try{
         const {token, ownerName, toUserName, messagesArray} = req.body;
