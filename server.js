@@ -45,6 +45,11 @@ io.on('connection', (socket) => {
             name: data.name, 
             time: data.time, to,
         })
+
+        call()
+        async function call(){
+            console.log(data)
+        }
     })
 
     socket.on('disconnect', () => {
@@ -193,31 +198,52 @@ app.post("/deleteUser", async (req, res) => {
         res.json({status: "error", error})
     }
 })
-app.get('/getInitialConversation', async (req, res) => {
-    //TODO:
-})
-app.get('/saveConversation', async (req, res) => {
+app.post('/getInitialConversation', async (req, res) => {
     try{
-    //TODO:
-        // let ownerModel = await UserModel.findOne({name})
-        // let toUserModel = await UserModel.findOne({name: to})
+        const {token, ownerName, toUserName} = req.body;
+        const result = jwt.verify(token, 'secret123')
 
-        // const prevValuesOwner = ownerModel.messages.get(to) 
-        // const prevValuesToUser = toUserModel.messages.get(name) 
+        if (result.name && result.iat){
+            const owner = await UserModel.findOne({name: ownerName})
+            
+            res.json({status: 'ok', data: owner})
+        }
+    } catch (error){
+        res.json({status: "error", error})
+    }
+})
+app.post('/saveConversation', async (req, res) => {
+    try{
+        const {token, ownerName, toUserName, messagesArray} = req.body;
+        const result = jwt.verify(token, 'secret123')
 
-        // ownerModel.messages.set(to, [...prevValuesOwner, {
-        //     msg: data.message, time: data.time
-        // }]) 
-        // toUserModel.messages.set(name, [...prevValuesToUser, {
-        //     msg: data.message, time: data.time
-        // }]) 
+        if (result.name && result.iat){
+            let ownerModel = await UserModel.findOne({name: ownerName})
+            let toUserModel = await UserModel.findOne({name: toUserName})
+            
+            const prevValuesOwner = ownerModel.messages.get(toUserModel) 
+            const prevValuesToUser = toUserModel.messages.get(ownerName)
 
-        // await ownerModel.save();
-        // await toUserModel.save();
+            //TODO SEPERATE OWNER AND USER
+            //CONVERSATION ARRAY
+            console.log('body:', req.body.messagesArray)
+            // ownerModel.messages.set(toUserName, [
+            //     ...prevValuesOwner, 
+            //     ...messagesArray // message: '', time: ''
+            // ]) 
+            // toUserModel.messages.set(ownerName, [
+            //     ...prevValuesToUser, 
+            //     ...messagesArray
+            // ]) 
 
-        // ownerModel = await UserModel.findOne({name})
-        // toUserModel = await UserModel.findOne({name: to})
-        
+            // await owner.save()
+            // await toUser.save()
+            
+            // ownerModel = await UserModel.findOne({name: ownerName})
+            // toUserModel = await UserModel.findOne({name: toUserName})
+
+            res.json({status: 'ok', ownerModel, toUserModel})
+        }
     } catch (error){
         res.json({status: "error", error})
     }
