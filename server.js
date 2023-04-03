@@ -41,7 +41,6 @@ io.on('connection', (socket) => {
             room: data.room,
             name: data.name,
         })
-        console.log(`message: ${data.message} on room: ${data.room}`)
     })
 
     socket.on('disconnect', () => {
@@ -93,9 +92,33 @@ app.get('/getAllUsers/:token', async (req, res) => {
         if (result.name && result.iat){
             const data = await UserModel.find();
             res.json({status: 'ok', data})
+        } else {
+            res.json({status: 'error'})
         }
     } catch (error){
         res.json({ status: 'error', error })
+    }
+})
+
+app.get('/getUserAddedUsers/:name/:token', async (req, res) => {
+    try{
+        const name = req.params.name;
+        const token = req.params.token;
+        const result = jwt.verify(token, 'secret123')
+
+        if (result.name && result.iat){
+            const data = await UserModel.findOne({name});
+
+            if (data){
+                res.json({ status: "ok", data })
+            } else {
+                res.json({ status: "error", data })
+            }
+        } else {
+            res.json({ status: "error" })
+        }
+    } catch (error){ //
+        res.json({status: "error", error})
     }
 })
 
@@ -103,14 +126,19 @@ app.post("/addUser", async (req, res) => {
     try{
         const {token, ownerName, toUserName} = req.body;
         const result = jwt.verify(token, 'secret123')
+
         if (result.name && result.iat){
-            const owner = await UserModel.findOne({name: ownerName})
-            const toUser = await UserModel.findOne({name: toUserName})
+            let owner = await UserModel.findOne({name: ownerName})
+            let toUser = await UserModel.findOne({name: toUserName})
             
-            // TODO: 
-            // owner.addedFriends.push(toUser.name);
-            // toUser.addedFriends.push(owner.name);
-            // UserModel.save()
+            owner.addedFriends.push(toUser.name);
+            toUser.addedFriends.push(owner.name);
+            
+            await owner.save()
+            await toUser.save()
+
+            owner = await UserModel.findOne({name: ownerName})
+            toUser = await UserModel.findOne({name: toUserName})
 
             res.json({status: 'ok', owner, toUser})
         }
@@ -118,5 +146,34 @@ app.post("/addUser", async (req, res) => {
         res.json({status: "error", error})
     }
 })
+
+app.post("/deleteUser", async (req, res) => {
+    try{
+        const {token, ownerName, toUserName} = req.body;
+        const result = jwt.verify(token, 'secret123')
+
+        if (result.name && result.iat){
+            let owner = await UserModel.findOne({name: ownerName})
+            let toUser = await UserModel.findOne({name: toUserName})
+            
+            owner.addedFriends.splice(
+                owner.addedFriends.indexOf(toUser.name, 1))
+
+            toUser.addedFriends.splice(
+                toUser.addedFriends.indexOf(owner.name), 1)
+            
+            await owner.save()
+            await toUser.save()
+
+            owner = await UserModel.findOne({name: ownerName})
+            toUser = await UserModel.findOne({name: toUserName})
+
+            res.json({status: 'ok', owner, toUser})
+        }
+    } catch (error){
+        res.json({status: "error", error})
+    }
+})
+
 
 server.listen('3001', () => console.log('>> 3001'))
