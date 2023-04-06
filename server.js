@@ -43,7 +43,9 @@ io.on('connection', (socket) => {
             message: data.message, 
             room: data.room,
             name: data.name, 
-            time: data.time, to,
+            time: data.time, 
+            profile: data.profile,
+            to,
         })
     })
 
