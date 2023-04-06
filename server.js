@@ -237,4 +237,39 @@ app.post('/saveConversation', async (req, res) => {
     }
 })
 
+app.post('/changeInfo', async (req, res) => {
+    try{
+        const {token, owner, newName, newPassword, newAvatar} = req.body;
+        const result = jwt.verify(token, 'secret123')
+
+        if (result.name && result.iat){
+            
+            let ownerModel = 'no update :/'
+
+            if (newName !== ''){
+                ownerModel = await UserModel.findOneAndUpdate({name: owner}, {name: newName})
+                
+                ownerModel.addedFriends.forEach(async (item) => {
+                    let userModel = await UserModel.findOne({name: item})
+                    const index = userModel.addedFriends.indexOf(owner)
+                    userModel.addedFriends.splice(index, 1, newName)
+                    await userModel.save()
+
+                    userModel = await UserModel.findOne({name: item})
+                })
+            }
+            if (newPassword !== ''){
+                ownerModel = await UserModel.findOneAndUpdate({name: owner}, {password: newPassword})
+            }
+            if (newAvatar !== ''){
+                ownerModel = await UserModel.findOneAndUpdate({name: owner}, {profile: newAvatar})
+            }
+            
+            res.json({status: "ok changing", newName})
+        }
+    } catch (error){
+        res.json({status: "error", error})
+    }
+})
+
 server.listen('3001', () => console.log('>> 3001'))
