@@ -17,13 +17,12 @@ app.use(bodyParser.json());
 //FOR SOCKET.IO
 const http = require('http');
 const server = http.createServer(app);
-const io = new Server(server);
-// const io = new Server(server, {
-//     cors: {
-//         origin: 'http://localhost:5173',
-//         methods: ['GET', 'POST'],
-//     }
-// });
+const io = new Server(server, {
+    cors: {
+        origin: 'https://socketiochatappreact.onrender.com/',
+        methods: ['GET', 'POST'],
+    }
+});
 //CONNECT TO DB
 try{mongoose.connect('mongodb+srv://nash:nash@cluster0.av72roz.mongodb.net/chatApplicationOfficial')} 
 catch (err) {console.log(err);}
