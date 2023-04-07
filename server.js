@@ -220,23 +220,23 @@ app.post('/saveConversation', async (req, res) => {
 
         if (result.name && result.iat){
             let ownerModel = await UserModel.findOne({name: ownerName})
-            let toUserModel = await UserModel.findOne({name: toUserName})
+            // let toUserModel = await UserModel.findOne({name: toUserName})
             
-            //CONVERSATION SAVE
+            //CONVERSATION SAVE: ONLY SAVE ON OWNER
             ownerModel.messages.set(toUserName, [
                 ...messagesArray 
             ]) 
-            toUserModel.messages.set(ownerName, [
-                ...messagesArray
-            ]) 
+            // toUserModel.messages.set(ownerName, [
+            //     ...messagesArray
+            // ]) 
 
             await ownerModel.save()
-            await toUserModel.save()
+            // await toUserModel.save()
             
             ownerModel = await UserModel.findOne({name: ownerName})
-            toUserModel = await UserModel.findOne({name: toUserName})
+            // toUserModel = await UserModel.findOne({name: toUserName})
 
-            res.json({status: 'ok', ownerModel, toUserModel})
+            res.json({status: 'ok', ownerModel})
         }
     } catch (error){
         res.json({status: "error", error})
