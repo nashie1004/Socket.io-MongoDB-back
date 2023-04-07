@@ -7,6 +7,8 @@ const { Server } = require('socket.io')
 
 const UserModel = require('./models/UserModels.js')
 
+const PORT = process.env.PORT || '3001'
+
 const app = express();
 app.use(cors())
 app.use(express.json())
@@ -15,13 +17,13 @@ app.use(bodyParser.json());
 //FOR SOCKET.IO
 const http = require('http');
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: 'http://localhost:5173',
-        methods: ['GET', 'POST'],
-    }
-});
-
+const io = new Server(server);
+// const io = new Server(server, {
+//     cors: {
+//         origin: 'http://localhost:5173',
+//         methods: ['GET', 'POST'],
+//     }
+// });
 //CONNECT TO DB
 try{mongoose.connect('mongodb+srv://nash:nash@cluster0.av72roz.mongodb.net/chatApplicationOfficial')} 
 catch (err) {console.log(err);}
@@ -274,4 +276,4 @@ app.post('/changeInfo', async (req, res) => {
     }
 })
 
-server.listen('3001', () => console.log('>> 3001'))
+server.listen(PORT, () => console.log('>> ', PORT))
