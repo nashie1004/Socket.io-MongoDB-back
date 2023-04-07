@@ -61,6 +61,7 @@ app.post('/register', async (req, res) => {
     try{
         const {name, password, profile} = req.body;
         const found = await UserModel.findOne({name})
+        console.log(req.body)
         if (found){
             res.json({ status: "error", message: "user already exists"})
         } 
@@ -81,6 +82,7 @@ app.post('/login', async (req, res) => {
     try{
         const {name, password} = req.body;
         const found = await UserModel.findOne({name, password})
+        console.log(req.body)
 
         if (found){
             const token = jwt.sign({ name }, 'secret123')
