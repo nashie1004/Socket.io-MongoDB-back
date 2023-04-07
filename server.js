@@ -175,8 +175,8 @@ app.post("/deleteUser", async (req, res) => {
             let toUser = await UserModel.findOne({name: toUserName})
             
             //DELETE MESSAGES ARRAY
-            owner.messages.delete(toUserName)
-            toUser.messages.delete(ownerName)
+            // owner.messages.delete(toUserName)
+            // toUser.messages.delete(ownerName)
             
             //DELETE USER 
             owner.addedFriends.splice(
