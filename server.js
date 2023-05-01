@@ -25,7 +25,7 @@ const io = new Server(server, {
     }
 });
 //CONNECT TO DB
-try{mongoose.connect('mongodb+srv://nash:nash@cluster0.av72roz.mongodb.net/chatApplicationOfficial')} 
+try{mongoose.connect('mongodb+srv://nash:nash@cluster0.av72roz.mongodb.net/mayOneChanged')} 
 catch (err) {console.log(err);}
 
 //SOCKET.IO
